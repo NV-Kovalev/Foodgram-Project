@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class FoodgramApiConfig(AppConfig):
+class RecipesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'foodgram_api'
+    name = 'recipes'
