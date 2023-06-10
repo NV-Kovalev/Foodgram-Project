@@ -1,27 +1,30 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework import viewsets, status
-from rest_framework.decorators import action, permission_classes
+from rest_framework import viewsets, status, mixins
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated)
+from rest_framework.permissions import (IsAuthenticated)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import User
+from .models import User, Subscribe
 from .serializers import (
     UserSerializer, CreateUserSerializer, SetPasswordSerializer,
-    GetTokenSerializer)
+    GetTokenSerializer, SubscriptionsSerializer, SubscribeSerializer,
+    NewUserResponseSerializer
+)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin,
+    mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     """
     ViewSet для перечесления, отображения профилей и регистрации пользователя.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
-    http_method_names = ['get', 'post']
 
     def get_serializer_class(self):
         if self.action in ('create',):
@@ -32,14 +35,9 @@ class UserViewSet(viewsets.ModelViewSet):
         super(UserViewSet, self).create(request, *args, **kwargs)
         new_user = get_object_or_404(
             User, username=request.data.get('username'))
-        custom_response = {
-            "email": new_user.email,
-            "id": new_user.pk,
-            "username": new_user.username,
-            "first_name": new_user.first_name,
-            "last_name": new_user.last_name
-        }
-        return Response(custom_response, status=status.HTTP_201_CREATED)
+        serializer = NewUserResponseSerializer(
+            new_user, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(
         detail=False,
@@ -59,12 +57,60 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def set_password(self, request):
         user = get_object_or_404(User, username=request.user)
-        print(request.user.password)
-        if user.check_password(request.data.get('current_password')) and (
-                request.data.get('new_password') != (
-                request.data.get('current_password'))):
-            user.set_password(request.data.get('new_password'))
-            user.save()
+        if not user.check_password(request.data.get('current_password')):
+            return Response(
+                {'current_password': 'Неверный пароль'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user.set_password(request.data.get('new_password'))
+        user.save()
+        return Response(
+            {'detail': 'Пароль успешно изменен!'},
+            status=status.HTTP_204_NO_CONTENT
+            )
+
+    @action(
+        methods=['get', ],
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+        pagination_class=PageNumberPagination
+    )
+    def subscriptions(self, request):
+        queryset = User.objects.filter(subscribing__user=request.user)
+        page = self.paginate_queryset(queryset)
+        serializer = SubscriptionsSerializer(
+            page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
+
+    @action(
+        methods=['post', 'delete', ],
+        detail=True,
+        permission_classes=(IsAuthenticated,)
+    )
+    def subscribe(self, request, **kwargs):
+        queryset = get_object_or_404(User, id=kwargs['pk'])
+
+        if request.method == 'POST':
+            serializer = SubscribeSerializer(
+                queryset, context={"request": request})
+            try:
+                Subscribe.objects.create(user=request.user, author=queryset)
+                return Response(
+                    serializer.data, status=status.HTTP_201_CREATED
+                )
+            except Exception:
+                return Response(
+                    {'detail': 'Вы уже подписаны на этого пользователя'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        if request.method == 'DELETE':
+            get_object_or_404(
+                Subscribe, user=request.user, author=queryset).delete()
+            return Response(
+                {'detail': 'Успешная отписка'},
+                status=status.HTTP_204_NO_CONTENT
+            )
 
 
 class GetTokenView(viewsets.ModelViewSet):
@@ -78,19 +124,22 @@ class GetTokenView(viewsets.ModelViewSet):
     )
     def login(self, request):
         user = get_object_or_404(User, email=request.data.get('email'))
-        print(request.data.get('password'))
         if user.check_password(request.data.get('password')):
             token = RefreshToken.for_user(user)
             return Response(
                 {'auth_token': str(token.access_token)},
                 status=status.HTTP_201_CREATED)
+        return Response(
+            data={'detail': 'Неверный логин или пароль.'},
+            status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(
-        methods=['post', ],
+        methods=['post', 'delete', ],
         detail=False,
         serializer_class=GetTokenSerializer,
         permission_classes=(IsAuthenticated,)
     )
     def logout(self, request):
-        token = RefreshToken.for_user(request.user)
-        return Response()
+        RefreshToken.for_user(request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
