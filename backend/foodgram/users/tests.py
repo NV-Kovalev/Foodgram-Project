@@ -41,7 +41,8 @@ class UserViewSetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_users_detail(self):
-        url = reverse('api:users-detail', kwargs={'pk': 1})
+        pk = self.author.pk
+        url = reverse('api:users-detail', kwargs={'pk': pk})
         response = self.anon_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
