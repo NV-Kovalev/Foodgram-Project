@@ -1,7 +1,7 @@
-from django.urls import include, path, reverse
+from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient, APIRequestFactory
-from rest_framework_simplejwt.tokens import (AccessToken, RefreshToken)
+from rest_framework.test import APITestCase, APIClient
+from rest_framework_simplejwt.tokens import (RefreshToken)
 
 from .models import User
 
@@ -67,7 +67,10 @@ class UserViewSetTests(APITestCase):
 
     def test_users_set_password(self):
         url = reverse('api:users-detail', kwargs={'pk': 'set_password'})
-        data = {'current_password': 'test', 'new_password': 'test1'}
+        data = {
+            "current_password": "test",
+            "new_password": "test1"
+            }
         response = self.anon_client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -80,7 +83,7 @@ class UserViewSetTests(APITestCase):
         url = reverse('api:users-detail', kwargs={'pk': 'subscriptions'})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response = self.anon_client.post(url)
+        response = self.anon_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_users_subscribe(self):

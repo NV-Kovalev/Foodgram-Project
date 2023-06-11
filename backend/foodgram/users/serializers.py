@@ -1,5 +1,8 @@
 from rest_framework import serializers
+
 from .models import User, Subscribe
+
+from api.serializers import ReadOnlyRecipeSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -16,6 +19,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed',
+        )
+
+
+class NewUserResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name'
         )
 
 
@@ -37,28 +49,27 @@ class CreateUserSerializer(serializers.ModelSerializer):
             )
         return obj
 
+    def to_representation(self, instance):
+        serializer = NewUserResponseSerializer(
+            instance,
+            context={'request': self.context.get('request')}
+        )
 
-class NewUserResponseSerializer(serializers.ModelSerializer):
+        return serializer.data
+
+
+class SubscriptionsSerializer(UserSerializer):
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name'
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed',
+            'recipes', 'recipes_count'
         )
 
-
-class SubscriptionsSerializer(UserSerializer):
-    # recipes = serializers.SerializerMethodField()
-    # recipes_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ('email', 'id',
-                  'username', 'first_name',
-                  'last_name', 'is_subscribed',)
-                  #'recipes', 'recipes_count'
-
-    """
     def get_recipes_count(self, obj):
         return obj.recipes.count()
 
@@ -68,29 +79,42 @@ class SubscriptionsSerializer(UserSerializer):
         recipes = obj.recipes.all()
         if limit:
             recipes = recipes[:int(limit)]
-        serializer = RecipeSerializer(recipes, many=True, read_only=True)
+        serializer = ReadOnlyRecipeSerializer(
+            recipes, many=True, read_only=True)
         return serializer.data
-    """
 
 
 class SubscribeSerializer(SubscriptionsSerializer):
     is_subscribed = serializers.SerializerMethodField()
-    # recipes = RecipeSerializer(many=True, read_only=True)
-    # recipes_count = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('email', 'id',
-                  'username', 'first_name',
-                  'last_name', 'is_subscribed',
-                  # 'recipes', 'recipes_count'
-                  )
+        fields = (
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed',
+            'recipes', 'recipes_count'
+        )
 
     def validate(self, obj):
         if (self.context['request'].user == obj):
             raise serializers.ValidationError(
                 {'errors': 'Подписка на себя невозможна'})
         return obj
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit')
+        recipes = obj.recipes.all()
+        if limit:
+            recipes = recipes[:int(limit)]
+        serializer = ReadOnlyRecipeSerializer(
+            recipes, many=True, read_only=True)
+        return serializer.data
 
 
 class SetPasswordSerializer(serializers.ModelSerializer):

@@ -8,10 +8,9 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User, Subscribe
-from .serializers import (
+from api.serializers import (
     UserSerializer, CreateUserSerializer, SetPasswordSerializer,
     GetTokenSerializer, SubscriptionsSerializer, SubscribeSerializer,
-    NewUserResponseSerializer
 )
 
 
@@ -30,14 +29,6 @@ class UserViewSet(
         if self.action in ('create',):
             return CreateUserSerializer
         return UserSerializer
-
-    def create(self, request, *args, **kwargs):
-        super(UserViewSet, self).create(request, *args, **kwargs)
-        new_user = get_object_or_404(
-            User, username=request.data.get('username'))
-        serializer = NewUserResponseSerializer(
-            new_user, context={"request": request})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(
         detail=False,
@@ -108,7 +99,7 @@ class UserViewSet(
             get_object_or_404(
                 Subscribe, user=request.user, author=queryset).delete()
             return Response(
-                {'detail': 'Успешная отписка'},
+                {'detail': 'Вы успешно отписались от пользователя'},
                 status=status.HTTP_204_NO_CONTENT
             )
 

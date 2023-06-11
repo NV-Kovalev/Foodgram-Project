@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from users.views import UserViewSet, GetTokenView
-from recipes.views import IngredientViewSet, TagViewSet
+from recipes.views import IngredientViewSet, TagViewSet, RecipeViewSet
 
 
 app_name = 'api'
@@ -14,7 +14,8 @@ router_v1 = DefaultRouter()
 router_v1.register('users', UserViewSet, basename='users')
 router_v1.register('auth/token', GetTokenView, basename='login')
 router_v1.register('ingredients', IngredientViewSet, basename='ingredients')
-router_v1.register('tags', TagViewSet, basename='tag')
+router_v1.register('tags', TagViewSet, basename='tags')
+router_v1.register('recipes', RecipeViewSet, basename='recipes')
 
 
 urlpatterns = [
