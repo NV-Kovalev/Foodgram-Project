@@ -1,3 +1,7 @@
+from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -6,10 +10,8 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
-from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
-
-from .models import Ingredient, Tag, Recipe, Favorite, ShoppingСart
+from .models import (
+    Ingredient, Tag, Recipe, Favorite, ShoppingCart, RecipeIngredient)
 from api.serializers import (
     IngredientSerializer, TagSerializer, ReadOnlyRecipeSerializer,
     RecipeCreateSerializer, GeneralRecipeSerializer
@@ -81,7 +83,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = GeneralRecipeSerializer(
                 queryset, context={"request": request})
             try:
-                ShoppingСart.objects.create(user=request.user, recipe=queryset)
+                ShoppingCart.objects.create(user=request.user, recipe=queryset)
                 return Response(
                     serializer.data, status=status.HTTP_201_CREATED
                 )
@@ -93,8 +95,38 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if request.method == 'DELETE':
             get_object_or_404(
-                ShoppingСart, user=request.user, recipe=queryset).delete()
+                ShoppingCart, user=request.user, recipe=queryset).delete()
             return Response(
                 {'detail': 'Вы успешно убрали рецепт из корзины'},
                 status=status.HTTP_204_NO_CONTENT
             )
+
+    @action(
+        detail=False,
+        methods=('get',),
+        permission_classes=(IsAuthenticated,)
+    )
+    def download_shopping_cart(self, request):
+        shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
+        if not shopping_cart:
+            return Response(
+                {"detail": "Корзина пуста"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        recipes = [item.recipe.id for item in shopping_cart]
+        buy_list = RecipeIngredient.objects.filter(
+            recipe__in=recipes).values('ingredient').annotate(
+            amount=Sum('amount'))
+        buy_list_text = 'Список покупок с сайта Foodgram:\n\n'
+        for item in buy_list:
+            ingredient = Ingredient.objects.get(pk=item['ingredient'])
+            amount = item['amount']
+            buy_list_text += (
+                f'{ingredient.name}, {amount} '
+                f'{ingredient.measurement_unit}\n'
+            )
+        response = HttpResponse(buy_list_text, content_type="text/plain")
+        response['Content-Disposition'] = (
+            'attachment; filename=shopping-list.txt'
+        )
+        return response

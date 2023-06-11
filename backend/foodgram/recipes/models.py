@@ -142,7 +142,7 @@ class Favorite(models.Model):
         return f'{self.user.username} добавил {self.recipe.name} в избранное'
 
 
-class ShoppingСart(models.Model):
+class ShoppingCart(models.Model):
     "Модель корзины."
     user = models.ForeignKey(
         User,

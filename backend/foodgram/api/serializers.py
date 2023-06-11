@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from drf_base64.fields import Base64ImageField
 
 from recipes.models import (
-    Ingredient, Tag, Recipe, RecipeIngredient, Favorite, ShoppingСart
+    Ingredient, Tag, Recipe, RecipeIngredient, Favorite, ShoppingCart
 )
 from users.models import User, Subscribe
 
@@ -201,7 +201,7 @@ class ReadOnlyRecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         return (
             self.context.get('request').user.is_authenticated
-            and ShoppingСart.objects.filter(
+            and ShoppingCart.objects.filter(
                 user=self.context['request'].user,
                 recipe=obj).exists()
         )
