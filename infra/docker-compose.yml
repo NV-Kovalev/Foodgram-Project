@@ -1,17 +1,42 @@
-version: '3.3'
+version: '3.8'
 services:
 
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+  postgresql:
+    image: postgres:14.8
+    container_name: PostgreSQL
     volumes:
-      - ../frontend/:/app/result_build/
+      - db_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
+  django:
+    build: ../backend/foodgram
+    container_name: Django
+    restart: always
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+    depends_on:
+      - postgresql
+    env_file:
+      - ./.env
+
   nginx:
     image: nginx:1.19.3
+    container_name: nginx
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
+
+    depends_on:
+      - django
+
+volumes:
+  static_value:
+  media_value:
+  db_data:
