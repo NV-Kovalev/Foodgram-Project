@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
 
 DEBUG = os.getenv('DEBUG', default=True)
 
-ALLOWED_HOSTS = ['localhost', 'backend']
+ALLOWED_HOSTS = ['localhost', 'backend', '127.0.0.1']
 
 
 INSTALLED_APPS = [
@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +84,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'UTC'
 
@@ -90,6 +92,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+AUTH_USER_MODEL = 'users.CustomUser'
 
 STATIC_URL = 'static/'
 
