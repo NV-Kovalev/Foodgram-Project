@@ -1,8 +1,14 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from .models import CustomUser
+from django.shortcuts import get_object_or_404
+
+from .models import CustomUser, Subscriptions
 from .serializers import (
-    UserSerializer, CreateUserSeriallizer
+    UserSerializer, CreateUserSeriallizer, SetPasswordSerializer,
+    SubscriptionsSerializer
 )
 
 
@@ -10,6 +16,10 @@ class UserViewSet(
     mixins.CreateModelMixin,
     viewsets.ReadOnlyModelViewSet
 ):
+    """
+    Класс описывающий: регистрацию пользователя, вывод данных о пользователе,
+    смену пароля, возможность подписываться на авторов и вывод списка подписок.
+    """
     queryset = CustomUser.objects.all()
 
     def get_serializer_class(self):
@@ -17,14 +27,77 @@ class UserViewSet(
             return UserSerializer
         return CreateUserSeriallizer
 
-    """
-    def create(self, request):
-        serializer = CreateUserSeriallizer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        serializer = RepresentationUserSeriallizer(
-            data=request.data, context={'request': request}
-        )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        data = serializer.save()
+        data.set_password(data.password)
+        data.save()
 
-    """
+    @action(
+        detail=False,
+        url_path='me',
+        permission_classes=(IsAuthenticated,)
+    )
+    def user_profile(self, request):
+        serializer = UserSerializer(request.user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        ['post'],
+        detail=False,
+        permission_classes=(IsAuthenticated,)
+    )
+    def set_password(self, request):
+        serializer = SetPasswordSerializer
+        serializer.is_valid(raise_exception=True)
+        self.request.user.set_password(serializer.data['new_password'])
+        self.request.user.save()
+
+    @action(
+        detail=False,
+        permission_classes=(IsAuthenticated,)
+    )
+    def subscriptions(self, request):
+        queryset = CustomUser.objects.filter(following__user=request.user)
+        serializer = SubscriptionsSerializer(
+            queryset, context={'request': request}, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        ['post', 'delete'],
+        detail=True,
+        permission_classes=(IsAuthenticated,)
+    )
+    def subscribe(self, request, pk):
+        author = get_object_or_404(CustomUser, id=pk)
+
+        if request.method == 'POST':
+
+            if author == request.user:
+                return Response(
+                    {"errors": "Подписка на себя не доступна"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if Subscriptions.objects.filter(
+             user=request.user, author=author).exists():
+                return Response(
+                    {"errors": "Вы уже подписаны на этого пользователя"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            Subscriptions.objects.create(user=request.user, author=author)
+            queryset = CustomUser.objects.get(username=author.username)
+            serializer = SubscriptionsSerializer(
+                queryset, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            try:
+                Subscriptions.objects.get(
+                    user=request.user, author=author).delete()
+                return Response()
+            except Exception:
+                return Response(
+                    {"errors": "Вы не подписаны на этого пользователя"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )

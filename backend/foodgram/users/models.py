@@ -39,8 +39,38 @@ class CustomUser(AbstractUser):
         max_length=150,
         )
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
     class Meta:
-        verbose_name = 'Пользователи'
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return self.email
+
+
+class Subscriptions(models.Model):
+    """
+    Модель Подписок пользователей.
+    """
+    user = models.ForeignKey(
+        CustomUser,
+        verbose_name='Подписчик',
+        on_delete=models.CASCADE,
+        related_name='follower',
+    )
+    author = models.ForeignKey(
+        CustomUser,
+        verbose_name='Автор',
+        on_delete=models.CASCADE,
+        related_name='following',
+    )
+
+    class Meta():
+        unique_together = ('user', 'author',)
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'
