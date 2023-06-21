@@ -27,11 +27,6 @@ class UserViewSet(
             return UserSerializer
         return CreateUserSeriallizer
 
-    def perform_create(self, serializer):
-        data = serializer.save()
-        data.set_password(data.password)
-        data.save()
-
     @action(
         detail=False,
         url_path='me',
@@ -92,12 +87,12 @@ class UserViewSet(
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            try:
+
+            if Subscriptions.objects.filter(
+             user=request.user, author=author).exists():
                 Subscriptions.objects.get(
                     user=request.user, author=author).delete()
                 return Response()
-            except Exception:
-                return Response(
-                    {"errors": "Вы не подписаны на этого пользователя"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            return Response(
+                    {"errors": "Вы уже подписаны на этого пользователя"},
+                    status=status.HTTP_400_BAD_REQUEST)
