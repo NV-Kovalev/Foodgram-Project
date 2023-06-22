@@ -25,7 +25,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
+    'colorfield',
     'users',
+    'recipes',
     'api',
 ]
 
@@ -100,7 +102,6 @@ USE_TZ = True
 AUTH_USER_MODEL = 'users.CustomUser'
 
 STATIC_URL = 'static/'
-
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
