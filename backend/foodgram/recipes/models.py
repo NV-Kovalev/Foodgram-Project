@@ -69,6 +69,7 @@ class Recipe(models.Model):
         Ingredients,
         verbose_name='Ингредиенты блюда',
         through='IngredientsInRecipe',
+        through_fields=('recipe', 'ingredients'),
     )
     tags = models.ManyToManyField(
         Tags,
@@ -77,7 +78,8 @@ class Recipe(models.Model):
     image = models.ImageField(
         'Изображение рецепта',
         upload_to='recipe',
-        blank=True
+        null=True,
+        default=None
     )
     name = models.CharField(
         'Название рецепта',
@@ -105,7 +107,9 @@ class Recipe(models.Model):
 
 
 class AbstractRecipeModel(models.Model):
-    """Абстрактная Модель"""
+    """
+    Абстрактная Модель.
+    """
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
@@ -118,12 +122,13 @@ class AbstractRecipeModel(models.Model):
 
 class IngredientsInRecipe(AbstractRecipeModel):
     """
-    Сквозная модель хранящая ингредиенты и их количество в рецепте.
+    Модель хранящая ингредиенты и их количество в рецепте.
     """
     ingredients = models.ForeignKey(
         Ingredients,
         verbose_name='Ингредиент в рецепте',
         on_delete=models.CASCADE,
+        related_name='ingredient'
     )
     amount = models.FloatField(
         'Количество ингредиента числом',
@@ -170,6 +175,7 @@ class ShoppingCart(AbstractRecipeModel):
         CustomUser,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
+        related_name='shoplist',
     )
 
     class Meta():

@@ -94,5 +94,5 @@ class UserViewSet(
                     user=request.user, author=author).delete()
                 return Response()
             return Response(
-                    {"errors": "Вы уже подписаны на этого пользователя"},
+                    {"errors": "Вы не подписаны на этого пользователя"},
                     status=status.HTTP_400_BAD_REQUEST)

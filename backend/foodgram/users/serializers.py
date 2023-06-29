@@ -5,6 +5,7 @@ from djoser.serializers import (
 )
 
 from .models import CustomUser
+from recipes.models import Recipe
 
 
 class CreateUserSeriallizer(UserCreateSerializer):
@@ -19,13 +20,13 @@ class CreateUserSeriallizer(UserCreateSerializer):
         )
 
     def to_representation(self, instance):
-        serializer = RepresentationUserSeriallizer(
+        serializer = RepresentationUserSerializer(
             instance, context={'request': self.context.get('request')}
         )
         return serializer.data
 
 
-class RepresentationUserSeriallizer(serializers.ModelSerializer):
+class RepresentationUserSerializer(serializers.ModelSerializer):
     """
     Сериализатор данных о зарегестрировавшемся пользователе.
     """
@@ -58,15 +59,34 @@ class UserSerializer(UserSerializer):
 
 
 class SetPasswordSerializer(SetPasswordSerializer):
+    """
+    Сериализатор смены пароля пользователя.
+    """
     pass
 
 
 class SubscriptionsSerializer(UserSerializer):
+    """
+    Cериализатор рецептов и авторов на которых подписан пользователь.
+    BasicRecipeSerializer импортирован внутри функции
+    для избежания конфликтов импорта.
+    """
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    def get_recipes(self, obj):
+        from recipes.serializers import BasicRecipeSerializer
+        queryset = Recipe.objects.filter(author=obj)
+        serializer = BasicRecipeSerializer(queryset, many=True)
+        return serializer.data
+
+    def get_recipes_count(self, obj):
+        count = Recipe.objects.filter(author=obj.id).count()
+        return count
 
     class Meta:
         model = CustomUser
         fields = (
             'email', 'id', 'username', 'first_name',
-            'last_name', 'is_subscribed',
-            # 'recipes', 'recipes_count',
+            'last_name', 'is_subscribed', 'recipes', 'recipes_count',
         )
