@@ -84,6 +84,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         recipe = super().create(validated_data)
+        print(validated_data)
         for ingredient in ingredients:
             IngredientsInRecipe.objects.create(
                 ingredients=ingredient.get('id'),

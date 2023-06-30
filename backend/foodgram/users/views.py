@@ -10,6 +10,7 @@ from .serializers import (
     UserSerializer, CreateUserSeriallizer, SetPasswordSerializer,
     SubscriptionsSerializer
 )
+from .custom_methods import get_post_delete_method
 
 
 class UserViewSet(
@@ -64,35 +65,5 @@ class UserViewSet(
     )
     def subscribe(self, request, pk):
         author = get_object_or_404(CustomUser, id=pk)
-
-        if request.method == 'POST':
-
-            if author == request.user:
-                return Response(
-                    {"errors": "Подписка на себя не доступна"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            if Subscriptions.objects.filter(
-             user=request.user, author=author).exists():
-                return Response(
-                    {"errors": "Вы уже подписаны на этого пользователя"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            Subscriptions.objects.create(user=request.user, author=author)
-            queryset = CustomUser.objects.get(username=author.username)
-            serializer = SubscriptionsSerializer(
-                queryset, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-
-            if Subscriptions.objects.filter(
-             user=request.user, author=author).exists():
-                Subscriptions.objects.get(
-                    user=request.user, author=author).delete()
-                return Response()
-            return Response(
-                    {"errors": "Вы не подписаны на этого пользователя"},
-                    status=status.HTTP_400_BAD_REQUEST)
+        return get_post_delete_method(
+            self, request, pk, author, Subscriptions, UserSerializer)
