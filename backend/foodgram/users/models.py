@@ -7,40 +7,20 @@ class CustomUser(AbstractUser):
     """
     Кастомная модель пользователя.
     """
-    username = models.CharField(
-        'Никнейм пользователя',
-        unique=True,
-        max_length=150,
-        validators=[
-            RegexValidator(
-                r'^[\w.@+-]+\Z',
-                ('Неправильное значение username '
-                 'Это поле может содержать только буквы, '
-                 'цифры, а также символы ".@+-"')
-            ),
-        ],
-        error_messages={
-            'max_length': ('Поле должно быть короче 150 символов'),
-        },)
+
     email = models.EmailField(
         'Электронная почта пользователя',
         unique=True,
         max_length=254,
-        error_messages={
-            'max_length': ('Поле должно быть короче 150 символов'),
-        },)
+    )
     first_name = models.CharField(
         'Имя пользователя',
         max_length=150,
-        error_messages={
-            'max_length': ('Поле должно быть короче 150 символов'),
-        },)
+    )
     last_name = models.CharField(
         'Фамилия пользователя',
         max_length=150,
-        error_messages={
-            'max_length': ('Поле должно быть короче 150 символов'),
-        },)
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
