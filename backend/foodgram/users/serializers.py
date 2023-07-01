@@ -20,6 +20,7 @@ class CreateUserSeriallizer(UserCreateSerializer):
         )
 
     def to_representation(self, instance):
+        """Данные которые отправит сервер после запроса"""
         serializer = RepresentationUserSerializer(
             instance, context={'request': self.context.get('request')}
         )
@@ -52,6 +53,7 @@ class UserSerializer(UserSerializer):
         )
 
     def get_is_subscribed(self, obj):
+        """Узнаем подписан ли пользователь на этого автора."""
         user = self.context.get('request').user
         if user.is_anonymous or (user == obj):
             return False
@@ -75,12 +77,14 @@ class SubscriptionsSerializer(UserSerializer):
     recipes_count = serializers.SerializerMethodField()
 
     def get_recipes(self, obj):
+        """Получаем рецепты автора."""
         from recipes.serializers import BasicRecipeSerializer
         queryset = Recipe.objects.filter(author=obj)
         serializer = BasicRecipeSerializer(queryset, many=True)
         return serializer.data
 
     def get_recipes_count(self, obj):
+        """Считаем рецепты автора."""
         count = Recipe.objects.filter(author=obj.id).count()
         return count
 

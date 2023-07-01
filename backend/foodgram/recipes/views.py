@@ -1,19 +1,23 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from django.shortcuts import get_object_or_404
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import (
     Tags, Ingredients, Recipe, Favourites, ShoppingCart, IngredientsInRecipe
 )
 from .permissions import IsAuthorOrReadOnly
+from .pagination import CustomPaginator
 from .serializers import (
     TagsSerializer, IngredientsSerializer,
     CreateRecipeSerializer, RecipeSerializer,
     BasicRecipeSerializer
 )
+
 from .pdf_gen import generate_shopping_list_pdf
 from users.custom_methods import get_post_delete_method
 
@@ -36,20 +40,26 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """
-    Обработка всех запросов к Рецептам.
+    Обработка запросов к Рецептам.
     """
     queryset = Recipe.objects.all()
     permission_classes = [
         IsAuthenticatedOrReadOnly,
         IsAuthorOrReadOnly
     ]
+    pagination_class = CustomPaginator
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['tags']
 
     def get_serializer_class(self):
+        """Выбираем сериализатор в зависимости от запроса."""
         if self.action in ("retrieve", "list"):
             return RecipeSerializer
         return CreateRecipeSerializer
 
     def perform_create(self, serializer):
+        """При создании объекта для поля автора будет использоваться
+        текущий пользоваетель."""
         serializer.save(author=self.request.user)
 
     @action(
@@ -58,6 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
+        """Экшн метод для добавление рецептов в избранное."""
         recipe = get_object_or_404(Recipe, id=pk)
         return get_post_delete_method(
             self, request, pk, recipe, Favourites, BasicRecipeSerializer)
@@ -68,6 +79,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
+        """Экшн метод для добавление рецептов в корзину."""
         recipe = get_object_or_404(Recipe, id=pk)
         return get_post_delete_method(
             self, request, pk, recipe, ShoppingCart, BasicRecipeSerializer)
@@ -77,10 +89,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
-        """
-        Функция позволяющая пользователю скачать PDF со списком покупок.
-        """
-
+        """Функция позволяющая пользователю скачать PDF со списком покупок."""
         shopping_list = []
         recipes_id = request.user.shoplist.values_list('recipe', flat=True)
 

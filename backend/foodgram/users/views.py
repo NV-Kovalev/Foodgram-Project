@@ -12,6 +12,8 @@ from .serializers import (
 )
 from .custom_methods import get_post_delete_method
 
+from recipes.pagination import CustomPaginator
+
 
 class UserViewSet(
     mixins.CreateModelMixin,
@@ -22,8 +24,10 @@ class UserViewSet(
     смену пароля, возможность подписываться на авторов и вывод списка подписок.
     """
     queryset = CustomUser.objects.all()
+    pagination_class = CustomPaginator
 
     def get_serializer_class(self):
+        """Выбираем сериализатор в зависимости от запроса."""
         if self.action in ("retrieve", "list"):
             return UserSerializer
         return CreateUserSeriallizer
@@ -34,6 +38,7 @@ class UserViewSet(
         permission_classes=(IsAuthenticated,)
     )
     def user_profile(self, request):
+        """Экшн метод для отображения профиля пользователя."""
         serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -43,6 +48,7 @@ class UserViewSet(
         permission_classes=(IsAuthenticated,)
     )
     def set_password(self, request):
+        """Экшн метод для изменения пароля пользователя."""
         serializer = SetPasswordSerializer
         serializer.is_valid(raise_exception=True)
         self.request.user.set_password(serializer.data['new_password'])
@@ -50,13 +56,16 @@ class UserViewSet(
 
     @action(
         detail=False,
-        permission_classes=(IsAuthenticated,)
+        permission_classes=(IsAuthenticated,),
+        pagination_class=CustomPaginator
     )
     def subscriptions(self, request):
+        """Экшн метод для отображения подписок."""
         queryset = CustomUser.objects.filter(following__user=request.user)
+        paginated_queryset = self.paginate_queryset(queryset)
         serializer = SubscriptionsSerializer(
-            queryset, context={'request': request}, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            paginated_queryset, context={'request': request}, many=True)
+        return self.get_paginated_response(serializer.data)
 
     @action(
         ['post', 'delete'],
@@ -64,6 +73,7 @@ class UserViewSet(
         permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, pk):
+        """Экшн метод для подписки на других пользователей."""
         author = get_object_or_404(CustomUser, id=pk)
         return get_post_delete_method(
             self, request, pk, author, Subscriptions, UserSerializer)

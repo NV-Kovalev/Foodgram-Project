@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
+    'django_filters',
     'colorfield',
     'users',
     'recipes',
@@ -114,7 +115,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ],
+    ]
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -130,3 +131,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Шрифты для pdf файла.
 font_path = os.path.join(BASE_DIR, 'font/Geologica.ttf')
 pdfmetrics.registerFont(TTFont('Geologica', font_path))
+
+# Путь до резервной копии базы данных Ingredients
+data_path = os.path.join(BASE_DIR, 'data/ingredients.csv')
