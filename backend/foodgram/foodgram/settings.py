@@ -1,6 +1,9 @@
 from pathlib import Path
 from dotenv import load_dotenv
 
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
 import os
 
 load_dotenv()
@@ -122,3 +125,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# Шрифты для pdf файла.
+font_path = os.path.join(BASE_DIR, 'font/Geologica.ttf')
+pdfmetrics.registerFont(TTFont('Geologica', font_path))

@@ -1,10 +1,6 @@
 from rest_framework import status
 from rest_framework.response import Response
 
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
 
 def get_post_delete_method(
         self, request, pk,
