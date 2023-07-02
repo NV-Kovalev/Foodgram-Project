@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend
 
+from .filters import IngredientsCustomSearchFilter, RecipeFilterSet
 from .models import (
     Tags, Ingredients, Recipe, Favourites, ShoppingCart, IngredientsInRecipe
 )
@@ -17,8 +18,8 @@ from .serializers import (
     CreateRecipeSerializer, RecipeSerializer,
     BasicRecipeSerializer
 )
-
 from .pdf_gen import generate_shopping_list_pdf
+
 from users.custom_methods import get_post_delete_method
 
 
@@ -36,6 +37,8 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Ingredients.objects.all()
     serializer_class = IngredientsSerializer
+    filter_backends = [IngredientsCustomSearchFilter]
+    search_fields = ['name']
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -49,7 +52,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ]
     pagination_class = CustomPaginator
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['tags']
+    filterset_class = RecipeFilterSet
 
     def get_serializer_class(self):
         """Выбираем сериализатор в зависимости от запроса."""

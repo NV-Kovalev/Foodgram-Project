@@ -132,5 +132,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 font_path = os.path.join(BASE_DIR, 'font/Geologica.ttf')
 pdfmetrics.registerFont(TTFont('Geologica', font_path))
 
-# Путь до резервной копии базы данных Ingredients
+# Путь до резервной копии базы данных Ingredients.
 data_path = os.path.join(BASE_DIR, 'data/ingredients.csv')

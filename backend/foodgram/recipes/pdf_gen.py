@@ -6,9 +6,8 @@ from reportlab.lib import colors
 
 
 def generate_shopping_list_pdf(request, shopping_list):
-    """
-    Функция создающая и отправляющая пользователю PDF со списком покупок.
-    """
+    """Функция создающая и отправляющая пользователю
+    PDF со списком покупок."""
 
     # Подготавливаем запрос.
     response = HttpResponse(content_type='application/pdf')
