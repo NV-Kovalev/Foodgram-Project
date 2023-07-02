@@ -105,7 +105,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     ingredients_id=ingredient.get('id'),
                     recipe_id=recipe_id).amount
                 if not any(item.get('name') == ingredient.get(
-                     'name') for item in shopping_list):
+                        'name') for item in shopping_list
+                        ):
                     item = {
                         'name': ingredient.get('name'),
                         'measurement_unit': ingredient.get(

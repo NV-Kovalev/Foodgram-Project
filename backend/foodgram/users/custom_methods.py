@@ -49,4 +49,5 @@ def get_post_delete_method(
             return Response()
         return Response(
                 {"errors": "Ошибка при удалении"},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=status.HTTP_400_BAD_REQUEST
+        )
