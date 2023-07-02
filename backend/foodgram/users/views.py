@@ -30,6 +30,8 @@ class UserViewSet(
         """Выбираем сериализатор в зависимости от запроса."""
         if self.action in ("retrieve", "list"):
             return UserSerializer
+        elif self.action == "set_password":
+            return SetPasswordSerializer
         return CreateUserSeriallizer
 
     @action(
@@ -49,10 +51,11 @@ class UserViewSet(
     )
     def set_password(self, request):
         """Экшн метод для изменения пароля пользователя."""
-        serializer = SetPasswordSerializer
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.request.user.set_password(serializer.data['new_password'])
         self.request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
