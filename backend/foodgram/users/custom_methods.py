@@ -48,6 +48,6 @@ def get_post_delete_method(
             model.objects.get(**validated_data).delete()
             return Response()
         return Response(
-                {"errors": "Ошибка при удалении"},
-                status=status.HTTP_400_BAD_REQUEST
+            {"errors": "Ошибка при удалении"},
+            status=status.HTTP_400_BAD_REQUEST
         )
