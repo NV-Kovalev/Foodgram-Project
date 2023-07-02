@@ -10,7 +10,7 @@ services:
       - ./.env
 
   django:
-    build: ../backend/foodgram
+    image: nvkovalev/foodgram:v1.0
     container_name: Django
     restart: always
     volumes:
