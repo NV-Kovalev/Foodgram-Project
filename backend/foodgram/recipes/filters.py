@@ -1,5 +1,4 @@
 from rest_framework import filters
-from distutils.util import strtobool
 import django_filters
 
 from .models import Tags, Recipe
