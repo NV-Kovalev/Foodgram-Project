@@ -1,7 +1,7 @@
 from rest_framework import filters
 import django_filters
 
-from .models import Tags, Recipe
+from recipes.models import Tags, Recipe
 
 
 BOOLEAN_CHOICES = (('0', False), ('1', True))

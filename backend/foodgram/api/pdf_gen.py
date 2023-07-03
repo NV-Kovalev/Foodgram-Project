@@ -1,15 +1,15 @@
 from django.http import HttpResponse
 
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
 
 
 def generate_shopping_list_pdf(request, shopping_list):
     """Функция создающая и отправляющая пользователю
     PDF со списком покупок."""
 
-    # Подготавливаем запрос.
+    # Подготавливаем ответ на запрос.
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = (
         'attachment; filename="shopping_list.pdf"')

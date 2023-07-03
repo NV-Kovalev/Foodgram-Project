@@ -56,9 +56,9 @@ jobs:
     - name: Push to Docker Hub
       uses: docker/build-push-action@v2
       with:
-        context: api_yamdb/
+        context: backend/foodgram/
         push: true
-        tags: nvkovalev/api_yamdb:v1
+        tags: nvkovalev/foodgram:v1.0
 
     - name: Send message if build_and_push_to_docker_hub failed
       if: ${{ failure() }}

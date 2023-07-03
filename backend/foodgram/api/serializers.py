@@ -1,10 +1,109 @@
 from rest_framework import serializers
-
 from drf_extra_fields.fields import Base64ImageField
+from djoser.serializers import (
+    UserSerializer, UserCreateSerializer, SetPasswordSerializer
+)
 
-from .models import (
+from users.models import CustomUser
+from recipes.models import (
     Tags, Ingredients, Recipe, IngredientsInRecipe)
-from users.serializers import UserSerializer
+
+
+class CreateUserSeriallizer(UserCreateSerializer):
+    """
+    Сериализатор регистрации пользователя.
+    """
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'email', 'username', 'first_name', 'last_name', 'password'
+        )
+
+    def to_representation(self, instance):
+        """Данные которые отправит сервер после запроса"""
+        serializer = RepresentationUserSerializer(
+            instance, context={'request': self.context.get('request')}
+        )
+        return serializer.data
+
+
+class RepresentationUserSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор данных о зарегестрировавшемся пользователе.
+    """
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name'
+        )
+
+
+class UserSerializer(UserSerializer):
+    """
+    Сериализатор данных пользователя.
+    """
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed'
+        )
+
+    def get_is_subscribed(self, obj):
+        """Узнаем подписан ли пользователь на этого автора."""
+        user = self.context.get('request').user
+        if user.is_anonymous or (user == obj):
+            return False
+        return user.follower.filter(author=obj).exists()
+
+
+class SetPasswordSerializer(SetPasswordSerializer):
+    """
+    Сериализатор смены пароля пользователя.
+    """
+    pass
+
+
+class BasicRecipeSerializer(serializers.ModelSerializer):
+    """
+    Базовый сериализатор Рецептов для короткого предстваления.
+    """
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class SubscriptionsSerializer(UserSerializer):
+    """
+    Cериализатор рецептов и авторов на которых подписан пользователь.
+    BasicRecipeSerializer импортирован внутри функции
+    для избежания конфликтов импорта.
+    """
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    def get_recipes(self, obj):
+        """Получаем рецепты автора."""
+        queryset = Recipe.objects.filter(author=obj)
+        serializer = BasicRecipeSerializer(queryset, many=True)
+        return serializer.data
+
+    def get_recipes_count(self, obj):
+        """Считаем рецепты автора."""
+        count = Recipe.objects.filter(author=obj.id).count()
+        return count
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed', 'recipes', 'recipes_count',
+        )
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -135,13 +234,3 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             instance, context={'request': self.context.get('request')}
         )
         return serializer.data
-
-
-class BasicRecipeSerializer(serializers.ModelSerializer):
-    """
-    Базовый сериализатор Рецептов для короткого предстваления.
-    """
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')

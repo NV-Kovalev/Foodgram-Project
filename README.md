@@ -90,6 +90,24 @@ docker-compose exec web python manage.py createsuperuser
 docker-compose exec web python manage.py collectstatic --no-input 
 ```
 
+## База данных:
+
+По желанию можно загрузить в базу данных информацию по большому списку ингредиентов:
+
+* Находясь в директории backend/foodgram/
+
+    ```
+    python3 manage.py shell
+    from data import load_data.py
+    fill_ingredients_from_csv()
+    ```
+
+При желании можно загрузить тестовые данные в бд:
+
+```
+python3 manage.py loaddata db.json
+```
+
 ## Проект будет полностью доступен по ссылке:
 
 ```
@@ -102,3 +120,8 @@ http://localhost/
 http://localhost/api/docs/redoc.html
 ```
 
+## Админка:
+
+```
+http://localhost/admin/
+```

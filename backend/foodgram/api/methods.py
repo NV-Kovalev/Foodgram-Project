@@ -9,8 +9,6 @@ def get_post_delete_method(
         serializer=None):
     """
     Дополнительный метод для однотипных post, delete запросов.
-    Только для моделей состоящих из поля связанного
-    с моделью пользователя и объекта.
 
     obj - Объект который нужно связать с моделью пользователя
     model - Модель через которую проходит связь
@@ -46,7 +44,7 @@ def get_post_delete_method(
 
         if model.objects.filter(**validated_data).exists():
             model.objects.get(**validated_data).delete()
-            return Response()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {"errors": "Ошибка при удалении"},
             status=status.HTTP_400_BAD_REQUEST
