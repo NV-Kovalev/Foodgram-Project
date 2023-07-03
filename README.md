@@ -1,1 +1,104 @@
-# praktikum_new_diplom
+### Проект Foodgram
+
+![example workflow](https://github.com/atar1boy/foodgram-project-react/actions/workflows/deploy_workflow.yml/badge.svg)
+
+## Сервис позволяющий пользователям создавать рецепты, подписываться на любимых авторов и подготавливать список покупок из понравившихся рецептов.
+
+## Команда разработчиков:
+backend: Никита Ковалев
+frontend: Yandex Practicum
+
+## Используемые технолологии:
+
+Django
+Django REST Framework
+PostgreSQL
+Nginx
+gunicorn
+Docker
+
+## Как запустить проект:
+
+Клонировать репозиторий и перейти в него в командной строке:
+
+```
+git clone git@github.com:atar1boy/foodgram-project-react
+```
+
+Создать .env файл внутри директории infra (на одном уровне с docker-compose.yaml) Пример .env файла:
+
+```
+SECRET_KEY = 'secret_key'
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+```
+
+Cоздать и активировать виртуальное окружение:
+
+```
+python3 -m venv env
+```
+
+* Если у вас Linux/macOS
+
+    ```
+    source env/bin/activate
+    ```
+
+* Если у вас windows
+
+    ```
+    source env/scripts/activate
+    ```
+
+```
+python3 -m pip install --upgrade pip
+```
+
+Установить зависимости из файла requirements.txt:
+
+```
+pip install -r requirements.txt
+```
+
+Запуск Docker контейнеров: Запустите docker-compose:
+
+```
+cd infra/
+docker-compose up -d --build
+```
+
+Выполните миграции:
+```
+docker-compose exec web python manage.py makemigrations reviews
+docker-compose exec web python manage.py migrate
+```
+
+Cоздайте суперпользователя:
+
+```
+docker-compose exec web python manage.py createsuperuser
+```
+
+Подготовьте статику:
+
+```
+docker-compose exec web python manage.py collectstatic --no-input 
+```
+
+## Проект будет полностью доступен по ссылке:
+
+```
+http://localhost/
+```
+
+## Документация:
+
+```
+http://localhost/api/docs/redoc.html
+```
+
