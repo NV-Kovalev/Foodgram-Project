@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import mixins, status, viewsets
@@ -161,29 +161,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         """Функция позволяющая пользователю скачать PDF со списком покупок."""
-        shopping_list = []
         recipes_id = request.user.shoplist.values_list('recipe', flat=True)
+        ingredients = IngredientInRecipe.objects.filter(
+            recipe_id__in=recipes_id).values_list(
+            'ingredients__name', 'ingredients__measurement_unit').annotate(
+            amount=Sum('amount'))
+        shopping_list = []
 
-        for recipe_id in recipes_id:
-            ingredients = get_object_or_404(
-                Recipe, id=recipe_id).ingredients.values()
-            for ingredient in ingredients:
-                amount = get_object_or_404(
-                    IngredientInRecipe,
-                    ingredients_id=ingredient.get('id'),
-                    recipe_id=recipe_id).amount
-                if not any(item.get('name') == ingredient.get(
-                        'name') for item in shopping_list):
-                    item = {
-                        'name': ingredient.get('name'),
-                        'measurement_unit': ingredient.get(
-                            'measurement_unit'),
-                        'amount': amount
-                    }
-                    shopping_list.append(item)
-                else:
-                    for item in shopping_list:
-                        if item.get('name') == ingredient.get('name'):
-                            item['amount'] += amount
+        for ingredient in ingredients:
+            print(ingredient)
+            item = {
+                'name': ingredient[0],
+                'measurement_unit': ingredient[1],
+                'amount': ingredient[2]
+            }
+            shopping_list.append(item)
 
         return generate_shopping_list_pdf(request, shopping_list)
