@@ -1,26 +1,28 @@
-from rest_framework import viewsets, mixins, status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
-from users.models import CustomUser, Subscriptions
-from recipes.models import (
-    Tags, Ingredients, Recipe, Favourites, ShoppingCart, IngredientsInRecipe
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import (
+    IsAuthenticated, IsAuthenticatedOrReadOnly
 )
-from .filters import IngredientsCustomSearchFilter, RecipeFilterSet
-from .permissions import IsAuthorOrReadOnly
+from rest_framework.response import Response
+
+from recipes.models import (
+    Favourite, Ingredient, IngredientInRecipe, Recipe, ShoppingCart, Tag
+)
+from users.models import CustomUser, Subscription
+
+from .filters import IngredientCustomSearchFilter, RecipeFilterSet
+from .methods import get_post_delete_method
+from .pdf_gen import generate_shopping_list_pdf
 from .pagination import CustomPaginator
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     UserSerializer, CreateUserSeriallizer, SetPasswordSerializer,
-    SubscriptionsSerializer, TagsSerializer, IngredientsSerializer,
+    SubscriptionSerializer, TagSerializer, IngredientSerializer,
     CreateRecipeSerializer, RecipeSerializer, BasicRecipeSerializer
 )
-from .pdf_gen import generate_shopping_list_pdf
-from .methods import get_post_delete_method
 
 
 class UserViewSet(
@@ -61,7 +63,8 @@ class UserViewSet(
         """Экшн метод для изменения пароля пользователя."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.request.user.set_password(serializer.data['new_password'])
+        self.request.user.set_password(
+            serializer.validated_data.get('new_password'))
         self.request.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -74,7 +77,7 @@ class UserViewSet(
         """Экшн метод для отображения подписок."""
         queryset = CustomUser.objects.filter(following__user=request.user)
         paginated_queryset = self.paginate_queryset(queryset)
-        serializer = SubscriptionsSerializer(
+        serializer = SubscriptionSerializer(
             paginated_queryset, context={'request': request}, many=True)
         return self.get_paginated_response(serializer.data)
 
@@ -85,26 +88,26 @@ class UserViewSet(
     )
     def subscribe(self, request, pk):
         """Экшн метод для подписки на других пользователей."""
-        author = get_object_or_404(CustomUser, id=pk)
         return get_post_delete_method(
-            self, request, pk, author, Subscriptions, UserSerializer)
+            self, request, pk, CustomUser, Subscription, UserSerializer
+        )
 
 
-class TagsViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Обработка list и retrive запросов к Тэгам.
     """
-    queryset = Tags.objects.all()
-    serializer_class = TagsSerializer
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
 
 
-class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Обработка list и retrive запросов к Ингредиентам.
     """
-    queryset = Ingredients.objects.all()
-    serializer_class = IngredientsSerializer
-    filter_backends = [IngredientsCustomSearchFilter]
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    filter_backends = [IngredientCustomSearchFilter]
     search_fields = ['name']
 
 
@@ -139,9 +142,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         """Экшн метод для добавление рецептов в избранное."""
-        recipe = get_object_or_404(Recipe, id=pk)
         return get_post_delete_method(
-            self, request, pk, recipe, Favourites, BasicRecipeSerializer)
+            self, request, pk, Recipe, Favourite, BasicRecipeSerializer)
 
     @action(
         ['post', 'delete'],
@@ -150,9 +152,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         """Экшн метод для добавление рецептов в корзину."""
-        recipe = get_object_or_404(Recipe, id=pk)
         return get_post_delete_method(
-            self, request, pk, recipe, ShoppingCart, BasicRecipeSerializer)
+            self, request, pk, Recipe, ShoppingCart, BasicRecipeSerializer)
 
     @action(
         detail=False,
@@ -168,7 +169,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 Recipe, id=recipe_id).ingredients.values()
             for ingredient in ingredients:
                 amount = get_object_or_404(
-                    IngredientsInRecipe,
+                    IngredientInRecipe,
                     ingredients_id=ingredient.get('id'),
                     recipe_id=recipe_id).amount
                 if not any(item.get('name') == ingredient.get(

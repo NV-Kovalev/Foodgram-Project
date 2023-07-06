@@ -1,7 +1,7 @@
-from django.http import HttpResponse
-
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+
+from django.http import HttpResponse
 from reportlab.lib.pagesizes import letter
 
 

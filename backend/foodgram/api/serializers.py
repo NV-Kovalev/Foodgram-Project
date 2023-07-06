@@ -1,12 +1,14 @@
 from rest_framework import serializers
-from drf_extra_fields.fields import Base64ImageField
+
 from djoser.serializers import (
     UserSerializer, UserCreateSerializer, SetPasswordSerializer
 )
+from drf_extra_fields.fields import Base64ImageField
 
-from users.models import CustomUser
 from recipes.models import (
-    Tags, Ingredients, Recipe, IngredientsInRecipe)
+    Tag, Ingredient, Recipe, IngredientInRecipe
+)
+from users.models import CustomUser
 
 
 class CreateUserSeriallizer(UserCreateSerializer):
@@ -78,7 +80,7 @@ class BasicRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscriptionsSerializer(UserSerializer):
+class SubscriptionSerializer(UserSerializer):
     """
     Cериализатор рецептов и авторов на которых подписан пользователь.
     BasicRecipeSerializer импортирован внутри функции
@@ -106,27 +108,27 @@ class SubscriptionsSerializer(UserSerializer):
         )
 
 
-class TagsSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
     """
     Сериализатор Тэгов.
     """
 
     class Meta:
-        model = Tags
+        model = Tag
         fields = ('__all__')
 
 
-class IngredientsSerializer(serializers.ModelSerializer):
+class IngredientSerializer(serializers.ModelSerializer):
     """
     Сериализатор Ингредиентов.
     """
 
     class Meta:
-        model = Ingredients
+        model = Ingredient
         fields = ('__all__')
 
 
-class IngredientsInRecipeSerializer(serializers.ModelSerializer):
+class IngredientInRecipeSerializer(serializers.ModelSerializer):
     """
     Сериализатор Ингредиентов в рецепте.
     """
@@ -136,19 +138,19 @@ class IngredientsInRecipeSerializer(serializers.ModelSerializer):
         source='ingredients.measurement_unit')
 
     class Meta:
-        model = IngredientsInRecipe
+        model = IngredientInRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class CreateIngredientsInRecipeSerializer(serializers.ModelSerializer):
+class CreateIngredientInRecipeSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания связи Ингредиентов в рецепте.
     """
     id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredients.objects.all())
+        queryset=Ingredient.objects.all())
 
     class Meta:
-        model = IngredientsInRecipe
+        model = IngredientInRecipe
         fields = ('id', 'amount')
 
 
@@ -156,9 +158,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     """
     Сериализатор Рецептов.
     """
-    tags = TagsSerializer(many=True)
+    tags = TagSerializer(many=True)
     author = UserSerializer()
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientInRecipeSerializer(
+        many=True, source='ingredientinrecipe_set')
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -176,12 +179,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return user.shoplist.filter(recipe=obj).exists()
 
-    def get_ingredients(self, obj):
-        """Получаем ингредиенты в рецепте и их количество."""
-        queryset = IngredientsInRecipe.objects.filter(recipe=obj)
-        serializer = IngredientsInRecipeSerializer(queryset, many=True)
-        return serializer.data
-
     class Meta:
         model = Recipe
         fields = (
@@ -195,7 +192,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     """
     Сериализатор создания Рецептов.
     """
-    ingredients = CreateIngredientsInRecipeSerializer(many=True)
+    ingredients = CreateIngredientInRecipeSerializer(many=True)
     image = Base64ImageField()
 
     class Meta:
@@ -205,23 +202,37 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'name', 'text', 'cooking_time'
         )
 
+    def validate_ingredients(self, value):
+        """Проверяем полученные данные на повторяющиеся элементы."""
+        ingredients = []
+        for ingredient in value:
+            ingredients.append(ingredient.get('id'))
+        unique_ingredients = set(ingredients)
+        if not len(unique_ingredients) == len(ingredients):
+            raise serializers.ValidationError(
+                'Ингредиенты не должны повторяться')
+        return value
+
     def create(self, validated_data):
         """Создаем рецепт и связываем ингредиенты с ним."""
         ingredients = validated_data.pop('ingredients')
         recipe = super().create(validated_data)
-        for ingredient in ingredients:
-            IngredientsInRecipe.objects.create(
+        data = [
+            IngredientInRecipe(
                 ingredients=ingredient.get('id'),
                 amount=ingredient.get('amount'),
                 recipe=recipe
             )
+            for ingredient in ingredients
+        ]
+        IngredientInRecipe.objects.bulk_create(data)
         return recipe
 
     def update(self, instance, validated_data):
         """Изменяем данные о рецепте."""
         ingredients = validated_data.pop('ingredients')
         for ingredient in ingredients:
-            IngredientsInRecipe.objects.update_or_create(
+            IngredientInRecipe.objects.update_or_create(
                 ingredients=ingredient.get('id'),
                 amount=ingredient.get('amount'),
                 recipe=instance

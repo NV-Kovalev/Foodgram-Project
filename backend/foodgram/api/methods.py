@@ -1,19 +1,22 @@
 from rest_framework import status
+
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 
 
 def get_post_delete_method(
         self, request, pk,
-        obj=None,
+        obj_model=None,
         model=None,
         serializer=None):
     """
     Дополнительный метод для однотипных post, delete запросов.
 
-    obj - Объект который нужно связать с моделью пользователя
+    obj_model - Модель для получения объекта
     model - Модель через которую проходит связь
     serializer - Сериализатор для ответа пользователю после операции.
     """
+    obj = get_object_or_404(obj_model, id=pk)
     validated_data = {}
     for field in model._meta.get_fields():
         if field.name != 'id' and field.name != 'user':

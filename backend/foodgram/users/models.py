@@ -6,7 +6,6 @@ class CustomUser(AbstractUser):
     """
     Кастомная модель пользователя.
     """
-
     email = models.EmailField(
         'Электронная почта пользователя',
         unique=True,
@@ -33,7 +32,7 @@ class CustomUser(AbstractUser):
         return self.email
 
 
-class Subscriptions(models.Model):
+class Subscription(models.Model):
     """
     Модель Подписок пользователей.
     """
@@ -50,8 +49,13 @@ class Subscriptions(models.Model):
         related_name='following',
     )
 
-    class Meta():
-        unique_together = ('user', 'author',)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_subscription'
+            )
+        ]
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 

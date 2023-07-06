@@ -1,13 +1,14 @@
-from rest_framework import filters
 import django_filters
 
-from recipes.models import Tags, Recipe
+from rest_framework import filters
+
+from recipes.models import Tag, Recipe
 
 
 BOOLEAN_CHOICES = (('0', False), ('1', True))
 
 
-class IngredientsCustomSearchFilter(filters.SearchFilter):
+class IngredientCustomSearchFilter(filters.SearchFilter):
     """
     Кастомный фильтр для запросов к ингредиентам.
     """
@@ -21,7 +22,7 @@ class RecipeFilterSet(django_filters.FilterSet):
     tags = django_filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
-        queryset=Tags.objects.all(),
+        queryset=Tag.objects.all(),
     )
     is_favorited = django_filters.TypedChoiceFilter(
         method='get_is_favorited',

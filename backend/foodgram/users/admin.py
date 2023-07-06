@@ -1,7 +1,9 @@
 from django.contrib import admin
-from .models import CustomUser, Subscriptions
 
-admin.site.register(Subscriptions)
+from .models import CustomUser, Subscription
+
+
+admin.site.register(Subscription)
 
 
 @admin.register(CustomUser)

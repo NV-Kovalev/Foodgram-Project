@@ -1,5 +1,6 @@
 import csv
-from recipes.models import Ingredients
+
+from recipes.models import Ingredient
 from foodgram.settings import data_path
 
 
@@ -8,5 +9,5 @@ def fill_ingredients_from_csv():
     with open(data_path, 'r') as file:
         reader = csv.reader(file)
         for obj in reader:
-            ingredient = Ingredients(name=obj[0], measurement_unit=obj[1])
+            ingredient = Ingredient(name=obj[0], measurement_unit=obj[1])
             ingredient.save()

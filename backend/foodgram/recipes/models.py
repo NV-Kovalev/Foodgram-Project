@@ -1,11 +1,12 @@
-from colorfield.fields import ColorField
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import models
+
+from colorfield.fields import ColorField
 
 from users.models import CustomUser
 
 
-class Tags(models.Model):
+class Tag(models.Model):
     """
     Модель тега блюда.
     """
@@ -32,7 +33,7 @@ class Tags(models.Model):
         return self.name
 
 
-class Ingredients(models.Model):
+class Ingredient(models.Model):
     """
     Модель ингредиента.
     """
@@ -57,7 +58,7 @@ class Ingredients(models.Model):
 class Recipe(models.Model):
     """
     Модель рецептов, включающая в себя поля связанные many-to-many модели:
-    Ingredients и Tags. Модель принимает изображения в Base64 кодировке.
+    Ingredient и Tag. Модель принимает изображения в Base64 кодировке.
     """
     author = models.ForeignKey(
         CustomUser,
@@ -66,13 +67,13 @@ class Recipe(models.Model):
         related_name='recipe'
     )
     ingredients = models.ManyToManyField(
-        Ingredients,
+        Ingredient,
         verbose_name='Ингредиенты блюда',
-        through='IngredientsInRecipe',
+        through='IngredientInRecipe',
         through_fields=('recipe', 'ingredients'),
     )
     tags = models.ManyToManyField(
-        Tags,
+        Tag,
         verbose_name='Теги блюда',
     )
     image = models.ImageField(
@@ -125,12 +126,12 @@ class AbstractRecipeModel(models.Model):
         abstract = True
 
 
-class IngredientsInRecipe(AbstractRecipeModel):
+class IngredientInRecipe(AbstractRecipeModel):
     """
     Модель хранящая ингредиенты и их количество в рецепте.
     """
     ingredients = models.ForeignKey(
-        Ingredients,
+        Ingredient,
         verbose_name='Ингредиент в рецепте',
         on_delete=models.CASCADE,
         related_name='ingredient'
@@ -145,6 +146,12 @@ class IngredientsInRecipe(AbstractRecipeModel):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredients'],
+                name='unique_ingredient_in_recipe'
+            )
+        ]
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
 
@@ -152,7 +159,7 @@ class IngredientsInRecipe(AbstractRecipeModel):
         return f'{self.ingredients} в {self.recipe}'
 
 
-class Favourites(AbstractRecipeModel):
+class Favourite(AbstractRecipeModel):
     """
     Модель Избранных рецептов.
     """
@@ -164,7 +171,12 @@ class Favourites(AbstractRecipeModel):
     )
 
     class Meta():
-        unique_together = ('user', 'recipe',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'user'],
+                name='unique_recipe_in_favourites'
+            )
+        ]
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные рецепты'
 
@@ -184,7 +196,12 @@ class ShoppingCart(AbstractRecipeModel):
     )
 
     class Meta():
-        unique_together = ('user', 'recipe',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'user'],
+                name='unique_recipe_in_shopping_cart'
+            )
+        ]
         verbose_name = 'Корзина покупок'
         verbose_name_plural = 'Корзина покупок'
 
