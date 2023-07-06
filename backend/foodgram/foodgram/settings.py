@@ -13,9 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
 
 DEBUG = os.getenv('DEBUG', default=False)
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 
-ALLOWED_HOSTS = ['localhost', 'backend', '127.0.0.1', 'django']
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'https://*.127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',

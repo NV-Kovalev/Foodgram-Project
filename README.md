@@ -35,6 +35,8 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 DB_HOST=db
 DB_PORT=5432
+ALLOWED_HOSTS=host1,host2
+CSRF_TRUSTED_ORIGINS=http://host1,https://host2
 ```
 
 Cоздать и активировать виртуальное окружение:
