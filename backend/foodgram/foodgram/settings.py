@@ -1,10 +1,10 @@
-from pathlib import Path
-from dotenv import load_dotenv
+import os
 
+from dotenv import load_dotenv
+from pathlib import Path
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-import os
 
 load_dotenv()
 

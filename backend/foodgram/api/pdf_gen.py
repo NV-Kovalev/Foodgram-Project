@@ -1,8 +1,7 @@
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-
 from django.http import HttpResponse
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 
 def generate_shopping_list_pdf(request, shopping_list):
