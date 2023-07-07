@@ -1,13 +1,11 @@
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly
 )
 from rest_framework.response import Response
-
 from recipes.models import (
     Favourite, Ingredient, IngredientInRecipe, Recipe, ShoppingCart, Tag
 )
@@ -165,11 +163,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients = IngredientInRecipe.objects.filter(
             recipe_id__in=recipes_id).values_list(
             'ingredients__name', 'ingredients__measurement_unit').annotate(
-            amount=Sum('amount'))
+            ingredient_amount=Sum('amount'))
         shopping_list = []
 
         for ingredient in ingredients:
-            print(ingredient)
             item = {
                 'name': ingredient[0],
                 'measurement_unit': ingredient[1],
