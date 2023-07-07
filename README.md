@@ -76,38 +76,37 @@ docker-compose up -d --build
 
 Выполните миграции:
 ```
-docker-compose exec web python manage.py makemigrations
-docker-compose exec web python manage.py migrate
+docker-compose exec django python manage.py makemigrations
+docker-compose exec django python manage.py migrate
 ```
 
 Cоздайте суперпользователя:
 
 ```
-docker-compose exec web python manage.py createsuperuser
+docker-compose exec django python manage.py createsuperuser
 ```
 
 Подготовьте статику:
 
 ```
-docker-compose exec web python manage.py collectstatic --no-input 
+docker-compose exec django python manage.py collectstatic --no-input 
 ```
 
 ## База данных:
 
-По желанию можно загрузить в базу данных информацию по большому списку ингредиентов:
-
-* Находясь в директории backend/foodgram/
+* По желанию можно загрузить в базу данных информацию по большому списку ингредиентов:
 
     ```
-    python3 manage.py shell
-    from data import load_data.py
-    fill_ingredients_from_csv()
+    docker-compose exec django python3 manage.py shell
+    from data import load_data
+    load_data.fill_ingredients_from_csv()
+    quit()
     ```
 
 При желании можно загрузить тестовые данные в бд:
 
 ```
-python3 manage.py loaddata db.json
+docker-compose exec django python3 manage.py loaddata db.json
 ```
 
 ## Проект будет полностью доступен по ссылке:
@@ -126,4 +125,9 @@ http://localhost/api/docs/redoc.html
 
 ```
 http://localhost/admin/
+```
+
+```
+Логин: adminfoodgram@yandex.ru
+Пароль: admin2023
 ```

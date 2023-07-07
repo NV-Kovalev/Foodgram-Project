@@ -90,7 +90,10 @@ class SubscriptionSerializer(UserSerializer):
 
     def get_recipes(self, obj):
         """Получаем рецепты автора."""
+        recipes_limit = self.context.get('request').GET.get('recipes_limit')
         queryset = Recipe.objects.filter(author=obj)
+        if recipes_limit:
+            queryset = queryset[:int(recipes_limit)]
         serializer = BasicRecipeSerializer(queryset, many=True)
         return serializer.data
 

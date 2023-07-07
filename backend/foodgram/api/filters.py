@@ -38,7 +38,7 @@ class RecipeFilterSet(django_filters.FilterSet):
 
     def get_is_favorited(self, queryset, field_name, value):
         """Фильтруем рецепты по избранным пользователя"""
-        return queryset.filter(favourites__user=self.request.user)
+        return queryset.filter(favourite__user=self.request.user)
 
     def get_is_in_shopping_cart(self, queryset, field_name, value):
         """Фильтруем рецепты по корзине покупок пользователя"""

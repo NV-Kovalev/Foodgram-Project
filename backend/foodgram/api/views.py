@@ -73,7 +73,8 @@ class UserViewSet(
     )
     def subscriptions(self, request):
         """Экшн метод для отображения подписок."""
-        queryset = CustomUser.objects.filter(following__user=request.user)
+        queryset = CustomUser.objects.filter(
+            following__user=request.user)
         paginated_queryset = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(
             paginated_queryset, context={'request': request}, many=True)
