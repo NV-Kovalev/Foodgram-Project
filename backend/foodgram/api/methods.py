@@ -27,13 +27,13 @@ def get_post_delete_method(
 
         if obj == request.user:
             return Response(
-                {"errors": "Ошибка при добавлении"},
+                {'errors': 'Ошибка при добавлении'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         if model.objects.filter(**validated_data).exists():
             return Response(
-                {"errors": "Ошибка при добавлении"},
+                {'errors': 'Ошибка при добавлении'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -48,6 +48,11 @@ def get_post_delete_method(
             model.objects.get(**validated_data).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
-            {"errors": "Ошибка при удалении"},
+            {'errors': 'Ошибка при удалении'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    return Response(
+        {'errors': 'Метод запроса не соответствует POST или DELETE'},
+        status=status.HTTP_400_BAD_REQUEST
+    )

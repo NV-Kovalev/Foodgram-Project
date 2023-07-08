@@ -38,7 +38,7 @@ class UserViewSet(
         """Выбираем сериализатор в зависимости от запроса."""
         if self.action in ("retrieve", "list"):
             return UserSerializer
-        elif self.action == "set_password":
+        if self.action == "set_password":
             return SetPasswordSerializer
         return CreateUserSeriallizer
 

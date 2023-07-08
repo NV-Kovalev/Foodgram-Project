@@ -99,8 +99,7 @@ class SubscriptionSerializer(UserSerializer):
 
     def get_recipes_count(self, obj):
         """Считаем рецепты автора."""
-        count = Recipe.objects.filter(author=obj.id).count()
-        return count
+        return Recipe.objects.filter(author=obj.id).count()
 
     class Meta:
         model = CustomUser
