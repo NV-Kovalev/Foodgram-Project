@@ -94,7 +94,9 @@ docker-compose exec django python manage.py collectstatic --no-input
 
 ## База данных:
 
-* По желанию можно загрузить в базу данных информацию по большому списку ингредиентов:
+* По желанию можно загрузить в базу данных тестовые данные или только ингредиенты:
+
+Ингредиенты:
 
     ```
     docker-compose exec django python3 manage.py shell
@@ -103,11 +105,11 @@ docker-compose exec django python manage.py collectstatic --no-input
     quit()
     ```
 
-При желании можно загрузить тестовые данные в бд:
+Тестовые данные:
 
-```
-docker-compose exec django python3 manage.py loaddata db.json
-```
+    ```
+    docker-compose exec django python3 manage.py loaddata db.json
+    ```
 
 ## Проект будет полностью доступен по ссылке:
 
@@ -118,7 +120,7 @@ http://localhost/
 ## Документация:
 
 ```
-http://localhost/api/docs/redoc.html
+http://localhost/api/docs/
 ```
 
 ## Админка:
