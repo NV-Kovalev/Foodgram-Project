@@ -108,7 +108,7 @@ docker-compose exec django python manage.py collectstatic --no-input
 Тестовые данные:
 
     ```
-    docker-compose exec django python3 manage.py loaddata db.json
+    docker-compose exec django python3 manage.py loaddata newdb.json
     ```
 
 ## Проект будет полностью доступен по ссылке:
