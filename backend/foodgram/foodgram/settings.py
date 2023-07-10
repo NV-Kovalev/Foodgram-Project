@@ -107,8 +107,6 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-STATIC_URL = 'static/'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
