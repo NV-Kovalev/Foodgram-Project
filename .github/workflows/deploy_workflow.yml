@@ -59,7 +59,7 @@ jobs:
         context: backend/foodgram/
         push: true
         tags: nvkovalev/foodgram:v1.0
-    
+
     - name: Push to Docker Hub
       uses: docker/build-push-action@v2
       with:
