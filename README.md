@@ -25,7 +25,7 @@ Docker
 git clone git@github.com:atar1boy/foodgram-project-react
 ```
 
-Создать .env файл внутри директории infra (на одном уровне с docker-compose.yaml) Пример .env файла:
+Создать .env файл внутри директории infra (на одном уровне с docker-compose.yml) Пример .env файла:
 
 ```
 SECRET_KEY = 'secret_key'
