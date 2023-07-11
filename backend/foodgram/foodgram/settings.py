@@ -134,3 +134,6 @@ pdfmetrics.registerFont(TTFont('Geologica', font_path))
 
 # Путь до резервной копии базы данных Ingredients.
 data_path = os.path.join(BASE_DIR, 'data/ingredients.csv')
+
+# Количество ингредиентов на одной PDF странице.
+NUMBER_OF_ITEMS_ON_PDF_PAGE = 25
