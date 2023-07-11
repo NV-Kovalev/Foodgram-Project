@@ -38,12 +38,16 @@ def generate_shopping_list_pdf(request, shopping_list):
         file.setFillColor(colors.white)
         file.drawString(30, 45, 'Продуктовый помощник')
 
-        # Ставим заголовок, нумеруем страницу и наполняем список.
+        # Ставим заголовок.
         file.setFillColor(colors.black)
         title_text = "Корзина покупок"
         file.drawString(30, 720, title_text)
+
+        # Нумеруем страницу.
         file.setFont("Geologica", 16)
         file.drawString(300, 120, (str(page + 1)))
+
+        # Наполняем список.
         file.setFont("Geologica", 16)
         x = 50
         y = 650
@@ -56,9 +60,9 @@ def generate_shopping_list_pdf(request, shopping_list):
             )
             y -= 20
 
+        # Сохраняем страницу.
         file.showPage()
 
     # Сохраняем и отправляем файл.
     file.save()
-
     return response
