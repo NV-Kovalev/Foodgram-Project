@@ -89,9 +89,9 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
-            sudo systemctl stop nginx 
+            sudo systemctl stop nginx
             sudo docker-compose stop
-            sudo docker-compose rm django
+            sudo docker-compose rm -f django
             sudo rm .env
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
