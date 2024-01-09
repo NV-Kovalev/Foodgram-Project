@@ -2,9 +2,9 @@
 
 ![example workflow](https://github.com/atar1boy/foodgram-project-react/actions/workflows/deploy_workflow.yml/badge.svg)
 
-## Мой дипломный проект демонстрирующий мои знания в работе с Django, Docker, CI/DI. Сейчас доступа к проекту нет, но если будет желание его увидеть, то пишите мне в личку. Контакты можно найти здесь в readme и в моем профиле.
+## Мой дипломный проект демонстрирующий мои знания в работе с Django, Docker, CI/DI. Сейчас доступа к проекту нет, но если будет желание его увидеть, то пишите мне в личку.
 
-### Контакты: [t.me/gl_ready/](https://t.me/gl_ready/)
+## Контакты: [t.me/gl_ready/](https://t.me/gl_ready/)
 
 ## Используемые технолологии:
 
