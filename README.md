@@ -1,39 +1,19 @@
-### Проект Foodgram
+# Foodgram
 
 ![example workflow](https://github.com/atar1boy/foodgram-project-react/actions/workflows/deploy_workflow.yml/badge.svg)
 
-## Сервис позволяющий пользователям создавать рецепты, подписываться на любимых авторов и подготавливать список покупок из понравившихся рецептов.
+## Мой дипломный проект демонстрирующий мои знания в работе с Django, Docker, CI/DI. Сейчас доступа к проекту нет, но если будет желание его увидеть, то пишите мне в личку. Контакты можно найти здесь в readme и в моем профиле.
 
-## http://158.160.57.117/
-
-Админка:
-
-```
-URL: http://158.160.57.117/admin/
-Логин: adminfoodgram@yandex.ru
-Пароль: admin2023
-```
-
-## Команда разработчиков:
-backend: Никита Ковалев
-frontend: Yandex Practicum
+### Контакты: [Телеграм](https://t.me/gl_ready/)
 
 ## Используемые технолологии:
 
-Django
-Django REST Framework
-PostgreSQL
-Nginx
-gunicorn
-Docker
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Django](https://img.shields.io/badge/Django-005571?style=for-the-badge&logo=Django)
+![Docker](https://img.shields.io/badge/Docker-%2300f.svg?style=for-the-badge&logo=Docker)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-3ECF8E?style=for-the-badge&logo=PostgreSQL)
 
 ## Как запустить проект:
-
-Клонировать репозиторий и перейти в него в командной строке:
-
-```
-git clone git@github.com:atar1boy/foodgram-project-react
-```
 
 Создать .env файл внутри директории infra (на одном уровне с docker-compose.yml) Пример .env файла:
 
@@ -104,7 +84,7 @@ docker-compose exec django python manage.py collectstatic --no-input
 
 ## База данных:
 
-* По желанию можно загрузить в базу данных тестовые данные или только ингредиенты:
+* По желанию можно загрузить мой бэкап в базу данных:
 
 Ингредиенты:
 
@@ -131,5 +111,13 @@ http://localhost/
 
 ```
 http://localhost/api/docs/
+```
+
+## Админка:
+
+```
+URL: http://158.160.57.117/admin/
+Логин: adminfoodgram@yandex.ru
+Пароль: admin2023
 ```
 
